@@ -24,7 +24,7 @@ export const ProductsList: React.FC<Props> = ({ className }) => {
 
   return (
     <>
-      <div className={cn("flex flex-wrap gap-2 ", className)}>
+      <div className={cn("flex flex-wrap gap-2 max-sm:gap-4", className)}>
         <AnimatePresence >
           {filteredDataCategory.map((item) => (
             <motion.div
@@ -35,7 +35,7 @@ export const ProductsList: React.FC<Props> = ({ className }) => {
               transition={{ duration: 0.3 }}
               className={cn(
                 "flex flex-col max-w-[290px] w-full bg-[#F9F9F9] p-3 rounded-2xl cursor-pointer ",
-                "max-sm:w-[195px]"
+                "max-sm:w-[185px]"
               )}
             >
               <img
