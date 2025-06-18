@@ -2,6 +2,7 @@ import React from "react";
 import img from "../../public/bg.png";
 import { Container } from "./container";
 import { cn } from "../utils/utils";
+import Link from "next/link";
 
 interface Props {
   className?: string;
@@ -10,7 +11,7 @@ interface Props {
 export const Header: React.FC<Props> = ({ className }) => {
   return (
     <div
-      className={cn("bg-no-repeat  w-[full] h-[500px] ","max-sm:h-[400px]")}
+      className={cn("bg-no-repeat  w-[full] h-[500px] ", "max-sm:h-[400px]")}
       style={{
         backgroundImage: `url(${img.src})`,
         backgroundSize: "cover",
@@ -20,14 +21,34 @@ export const Header: React.FC<Props> = ({ className }) => {
       <Container className="pt-8">
         <div className="flex flex-col items-center gap-6 sm:gap-8 ">
           {/* Логотип */}
-          <img src="/logo.png" alt="logo" className="w-40 max-sm:w-[160px] max-sm:ml-8" />
+          <Link href="/">
+            <img
+              src="/logo.png"
+              alt="logo"
+              className="w-40 max-sm:w-[160px] max-sm:ml-8"
+            />
+          </Link>
 
           {/* Контейнер с бургером и текстом */}
-          <div className={cn("flex  items-center  gap-6 ","max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-start max-sm:ml-16")}>
-            <img src="/burger.png" alt="burger" className={cn("w-1/2","max-sm:w-30 max-sm:ml-12")} />
+          <div
+            className={cn(
+              "flex  items-center  gap-6 ",
+              "max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-start max-sm:ml-16"
+            )}
+          >
+            <img
+              src="/burger.png"
+              alt="burger"
+              className={cn("w-1/2", "max-sm:w-30 max-sm:ml-12")}
+            />
 
             <div className="flex flex-col w-1/2 text-white  max-sm:max-w-full">
-              <h1 className={cn("text-5xl  w-[420px] font-bold","max-sm:text-3xl max-sm:w-[250px]")}>
+              <h1
+                className={cn(
+                  "text-5xl  w-[420px] font-bold",
+                  "max-sm:text-3xl max-sm:w-[250px]"
+                )}
+              >
                 Только самые{" "}
                 <span className="text-red-600">сочные бургеры!</span>
               </h1>
