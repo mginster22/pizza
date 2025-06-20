@@ -25,7 +25,7 @@ export const Header: React.FC<Props> = ({ className }) => {
             <img
               src="/logo.png"
               alt="logo"
-              className="w-40 max-sm:w-[160px] max-sm:ml-8"
+              className="w-40 max-sm:w-[160px] "
             />
           </Link>
 
@@ -33,7 +33,7 @@ export const Header: React.FC<Props> = ({ className }) => {
           <div
             className={cn(
               "flex  items-center  gap-6 ",
-              "max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-start max-sm:ml-16"
+              "max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-start max-sm:ml-8"
             )}
           >
             <img

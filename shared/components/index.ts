@@ -4,3 +4,4 @@ export {MenuList} from "./menu-list";
 export {ProductsList} from "./products-list";
 export {Cart} from "./cart";
 export {CartItem} from "./cart-item";
+export {Footer} from "./footer";
