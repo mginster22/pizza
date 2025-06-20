@@ -9,11 +9,17 @@ const AUTH_DURATION = 24 * 60 * 60 * 1000; // 24 часа
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const [userInteracted, setUserInteracted] = useState(false);
+
   const [orders, setOrders] = useState<any[]>([]);
+  
   const prevOrderIds = useRef<Set<number>>(new Set());
+  
   const audioContextRef = useRef<AudioContext | null>(null);
+
   const toastIdRef = useRef<string | null>(null);
 
   // Показать тост с напоминанием кликнуть
@@ -184,6 +190,7 @@ export default function AdminPage() {
             <p><strong>Адрес:</strong> {order.address}</p>
             <p><strong>Товары:</strong><br />{order.cart}</p>
             <p><strong>Сумма:</strong> {order.total}</p>
+             <p><strong>Оплата:</strong> {order.isPaid ? "Оплачен" : "Не оплачен"}</p>
           </li>
         ))}
       </ul>

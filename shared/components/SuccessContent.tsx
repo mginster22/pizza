@@ -27,8 +27,6 @@ export default function SuccessContent() {
       cart = "Ошибка декодирования состава заказа";
     }
 
-    console.log({ orderNumber, name, phone, amount, address, cart, isPaid });
-
     if (
       !orderNumber ||
       !name ||
@@ -42,26 +40,46 @@ export default function SuccessContent() {
       return;
     }
 
-    emailjs
-      .send(
-        "service_99tgnff",
-        "template_wf81u0y",
-        {
-          orderNumber,
-          name,
-          phone,
-          total: `${amount} грн`,
-          address,
-          cart,
-          isPaid: "Оплачен",
-        },
-        "2wQadjCakXxRK4SiR"
-      )
+    // 💾 Сохраняем заказ в базу
+    fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        phone,
+        address,
+        deliveryMethod: address.includes("Самовывоз") ? "pickup" : "delivery",
+        paymentMethod: "card",
+        cart,
+        total: `${amount} грн`,
+        isPaid: true,
+      }),
+    })
+      .then((res) => res.json())
+      .then(({ order }) => {
+        console.log("Заказ сохранён после оплаты:", order);
+
+        // 📧 Отправляем письмо
+        return emailjs.send(
+          "service_99tgnff",
+          "template_wf81u0y",
+          {
+            orderNumber,
+            name,
+            phone,
+            total: `${amount} грн`,
+            address,
+            cart,
+            isPaid,
+          },
+          "2wQadjCakXxRK4SiR"
+        );
+      })
       .then(() => {
         console.log("Письмо успешно отправлено");
       })
-      .catch((error) => {
-        console.error("Ошибка при отправке письма:", error);
+      .catch((err) => {
+        console.error("Ошибка при сохранении/отправке:", err);
       });
   }, [searchParams]);
 

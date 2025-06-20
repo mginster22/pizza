@@ -16,12 +16,14 @@ datasource db {
 
 model Order {
   id             Int      @id @default(autoincrement())
-  orderNumber    Int
+  orderNumber    Int?
   name           String
   phone          String
+  paymentMethod  String
   deliveryMethod String
   address        String
   cart           String
+  isPaid         Boolean  @default(false)
   total          String
   createdAt      DateTime @default(now())
 }

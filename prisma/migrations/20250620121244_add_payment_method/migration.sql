@@ -4,6 +4,7 @@ CREATE TABLE "Order" (
     "orderNumber" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
+    "paymentMethod" TEXT NOT NULL,
     "deliveryMethod" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "cart" TEXT NOT NULL,

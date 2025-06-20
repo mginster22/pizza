@@ -28,7 +28,7 @@ interface Props {
 
 export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
   const { cart } = useCartStore();
-  const [orderNumber, setOrderNumber] = React.useState<number | null>(null);
+  const [orderId, setOrderId] = React.useState<number | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const {
@@ -64,14 +64,14 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
 
   const handleCardPayment = async (
     total: number,
-    orderNumber: number,
+    id: number,
     name: string,
     phone: string,
     fullAddress: string,
     details: string
   ) => {
     const base64Cart = btoa(unescape(encodeURIComponent(details)));
-    const resultUrl = `https://pizza-ur5p.vercel.app/success?order_id=${orderNumber}&name=${encodeURIComponent(
+    const resultUrl = `http://localhost:3000/success?order_id=${id}&name=${encodeURIComponent(
       name
     )}&phone=${encodeURIComponent(
       phone
@@ -84,10 +84,10 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: total,
-        orderNumber,
+        orderNumber: id,
         name,
         phone,
-        resultUrl, // 👈 именно сюда
+        resultUrl,
       }),
     });
 
@@ -117,80 +117,86 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
     }
   };
 
-  const onSubmit = async (data: FormData) => {
-    if (deliveryMethod === "delivery" && (!street || !data.house?.trim())) {
-      toast.error("Укажите улицу и номер дома");
+const onSubmit = async (data: FormData) => {
+  if (deliveryMethod === "delivery" && (!street || !data.house?.trim())) {
+    toast.error("Укажите улицу и номер дома");
+    return;
+  }
+
+  setIsLoading(true);
+
+  const { total, details } = getCartSummary();
+
+  const fullAddress =
+    deliveryMethod === "delivery"
+      ? `г. Марганец, ул. ${street}, дом ${data.house}${
+          data.apartment ? `, кв. ${data.apartment}` : ""
+        }`
+      : "Самовывоз";
+
+  const baseOrder = {
+    name: data.name,
+    phone: data.phone,
+    deliveryMethod,
+    paymentMethod,
+    address: fullAddress,
+    cart: details,
+    total: `${total} грн`,
+  };
+
+  try {
+    if (paymentMethod === "card") {
+      // При оплате картой — НЕ сохраняем заказ сразу, только после оплаты
+      await handleCardPayment(
+        total,
+        Date.now(), // временный ID (можешь заменить на uuid)
+        data.name,
+        data.phone,
+        fullAddress,
+        details
+      );
       return;
     }
 
-    setIsLoading(true);
+    // При оплате наличными — сохраняем сразу
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...baseOrder,
+        isPaid: false,
+      }),
+    });
 
-    const orderNum = Math.floor(100000 + Math.random() * 900000);
-    const { total, details } = getCartSummary();
+    if (!res.ok) throw new Error("Ошибка при сохранении заказа");
 
-    const fullAddress =
-      deliveryMethod === "delivery"
-        ? `г. Марганец, ул. ${street}, дом ${data.house}${
-            data.apartment ? `, кв. ${data.apartment}` : ""
-          }`
-        : "Самовывоз";
+    const { order } = await res.json();
+    setOrderId(order.id);
 
-    const order = {
-      orderNumber: orderNum,
-      name: data.name,
-      phone: data.phone,
-      deliveryMethod,
-      address: fullAddress,
-      cart: details,
-      total: `${total} грн`,
-      paymentMethod,
-    };
+    // Отправка email
+    await emailjs.send(
+      "service_99tgnff",
+      "template_wf81u0y",
+      {
+        ...baseOrder,
+        orderNumber: order.id,
+        isPaid: "Не оплачен",
+      },
+      "2wQadjCakXxRK4SiR"
+    );
 
-    try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(order),
-      });
+    toast.success("Заказ отправлен!");
+  } catch (err) {
+    console.error(err);
+    toast.error((err as Error).message || "Ошибка при оформлении заказа");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-      if (!res.ok) throw new Error("Ошибка при сохранении заказа");
-      setOrderNumber(orderNum);
 
-      if (paymentMethod === "card") {
-        await handleCardPayment(
-          total,
-          orderNum,
-          data.name,
-          data.phone,
-          fullAddress,
-          details
-        );
-        // здесь return — чтобы письмо не отправлялось сейчас
-        return;
-      }
 
-      // Если наличные, отправляем письмо сразу
-      await emailjs.send(
-        "service_99tgnff",
-        "template_wf81u0y",
-        {
-          ...order,
-          isPaid: "Не оплачен",
-        },
-        "2wQadjCakXxRK4SiR"
-      );
-
-      toast.success("Заказ отправлен!");
-    } catch (err) {
-      console.error(err);
-      toast.error((err as Error).message || "Ошибка при оформлении заказа");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // === Success Screen ===
-  if (orderNumber) {
+  if (orderId) {
     return (
       <div
         onClick={onClose}
@@ -202,7 +208,7 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
         >
           <h2 className="text-2xl font-bold mb-4">Спасибо за заказ!</h2>
           <p className="text-lg">
-            Ваш заказ №<strong>{orderNumber}</strong> в обработке.
+            Ваш заказ №<strong>{orderId}</strong> в обработке.
           </p>
           <p className="mt-2 text-gray-600">
             Мы свяжемся с вами для подтверждения.
