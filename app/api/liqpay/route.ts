@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       description: `Оплата заказа №${orderNumber}`,
       order_id: `${orderNumber}`,
      result_url: resultUrl,
-      server_url: "http://localhost:3000/api/liqpay/webhook",
+      server_url: "https://pizza-ur5p.vercel.app/api/liqpay/webhook",
     };
 
     const json = JSON.stringify(params);
