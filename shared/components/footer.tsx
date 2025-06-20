@@ -17,7 +17,7 @@ export const Footer: React.FC<Props> = ({ className }) => {
           <div className="flex flex-col gap-6 max-sm:gap-2">
             <strong className="text-xl">Номер для заказа:</strong>
             <span className="flex items-center gap-1">
-              <img src="/icons/phone.png" /> +380991156425
+              <img src="/icons/phone.png" /> +380991156424
             </span>
           </div>
           <div className="flex flex-col gap-2 items-center">
