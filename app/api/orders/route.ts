@@ -36,3 +36,19 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+export async function PATCH(req: Request) {
+  const body = await req.json();
+  const { id, orderNumber, isPaid } = body;
+
+  try {
+    const updated = await prisma.order.update({
+      where: { id: Number(id) }, // ✅ только по ID
+      data: { isPaid },
+    });
+
+    return NextResponse.json({ order: updated });
+  } catch (err) {
+    console.error("Ошибка обновления заказа:", err);
+    return NextResponse.json({ error: "Ошибка обновления" }, { status: 500 });
+  }
+}

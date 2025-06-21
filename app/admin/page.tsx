@@ -9,15 +9,15 @@ const AUTH_DURATION = 24 * 60 * 60 * 1000; // 24 часа
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
-  
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   const [userInteracted, setUserInteracted] = useState(false);
 
   const [orders, setOrders] = useState<any[]>([]);
-  
+
   const prevOrderIds = useRef<Set<number>>(new Set());
-  
+
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const toastIdRef = useRef<string | null>(null);
@@ -86,7 +86,9 @@ export default function AdminPage() {
     try {
       const response = await fetch("/notification.mp3");
       const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+      const audioBuffer = await audioContextRef.current.decodeAudioData(
+        arrayBuffer
+      );
       const source = audioContextRef.current.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContextRef.current.destination);
@@ -150,12 +152,15 @@ export default function AdminPage() {
       toast.error("Неверный пароль");
     }
   };
+  
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-4 text-center">Введите пароль</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">
+            Введите пароль
+          </h2>
           <input
             type="password"
             value={password}
@@ -173,24 +178,50 @@ export default function AdminPage() {
       </div>
     );
   }
-
+  console.log(orders)
   return (
     <div className="p-10">
       <h1 className="text-3xl font-bold mb-6">Список заказов</h1>
       <ul className="space-y-4">
         {orders.map((order) => (
           <li key={order.id} className="border p-4 rounded-xl shadow">
-            <p><strong>№:</strong> {order.id}</p>
+            <p>
+              <strong>№:</strong> {order.id}
+            </p>
             <p className="text-xl font-bold">
               Создано: {new Date(order.createdAt).toLocaleString()}
             </p>
-            <p><strong>Имя:</strong> {order.name}</p>
-            <p><strong>Тел:</strong> {order.phone}</p>
-            <p><strong>Метод:</strong> {order.deliveryMethod}</p>
-            <p><strong>Адрес:</strong> {order.address}</p>
-            <p><strong>Товары:</strong><br />{order.cart}</p>
-            <p><strong>Сумма:</strong> {order.total}</p>
-             <p><strong>Оплата:</strong> {order.isPaid ? "Оплачен" : "Не оплачен"}</p>
+            <p>
+              <strong>Имя:</strong> {order.name}
+            </p>
+            <p>
+              <strong>Тел:</strong> {order.phone}
+            </p>
+            <p>
+              <strong>Метод:</strong> {order.deliveryMethod}
+            </p>
+            <p>
+              <strong>Адрес:</strong> {order.address}
+            </p>
+            <p>
+              <strong>Товары:</strong>
+              <br />
+              {order.cart}
+            </p>
+            <p>
+              <strong>Сумма:</strong> {order.total}
+            </p>
+            <p>
+              <strong>Оплата:</strong>{" "}
+              <span
+                className={`font-semibold ${
+                  order.isPaid ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {order.paymentMethod === "card" ? "Карта" : "Наличные"} —{" "}
+                {order.isPaid ? "Оплачен" : "Не оплачен"}
+              </span>
+            </p>
           </li>
         ))}
       </ul>

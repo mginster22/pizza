@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// ===== Валидация =====
 const schema = z.object({
   name: z.string().min(1, "Введите имя"),
   phone: z.string().min(1, "Введите номер телефона"),
@@ -64,14 +63,14 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
 
   const handleCardPayment = async (
     total: number,
-    id: number,
+    orderId: number,
     name: string,
     phone: string,
     fullAddress: string,
     details: string
   ) => {
     const base64Cart = btoa(unescape(encodeURIComponent(details)));
-    const resultUrl = `https://pizza-ur5p.vercel.app/success?order_id=${id}&name=${encodeURIComponent(
+    const resultUrl = `http://localhost:3000/success?order_id=${orderId}&name=${encodeURIComponent(
       name
     )}&phone=${encodeURIComponent(
       phone
@@ -84,10 +83,10 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: total,
-        orderNumber: id,
         name,
         phone,
         resultUrl,
+        orderNumber: orderId
       }),
     });
 
@@ -117,84 +116,80 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
     }
   };
 
-const onSubmit = async (data: FormData) => {
-  if (deliveryMethod === "delivery" && (!street || !data.house?.trim())) {
-    toast.error("Укажите улицу и номер дома");
-    return;
-  }
-
-  setIsLoading(true);
-
-  const { total, details } = getCartSummary();
-
-  const fullAddress =
-    deliveryMethod === "delivery"
-      ? `г. Марганец, ул. ${street}, дом ${data.house}${
-          data.apartment ? `, кв. ${data.apartment}` : ""
-        }`
-      : "Самовывоз";
-
-  const baseOrder = {
-    name: data.name,
-    phone: data.phone,
-    deliveryMethod,
-    paymentMethod,
-    address: fullAddress,
-    cart: details,
-    total: `${total} грн`,
-  };
-
-  try {
-    if (paymentMethod === "card") {
-      // При оплате картой — НЕ сохраняем заказ сразу, только после оплаты
-      await handleCardPayment(
-        total,
-        Date.now(), // временный ID (можешь заменить на uuid)
-        data.name,
-        data.phone,
-        fullAddress,
-        details
-      );
+  const onSubmit = async (data: FormData) => {
+    if (deliveryMethod === "delivery" && (!street || !data.house?.trim())) {
+      toast.error("Укажите улицу и номер дома");
       return;
     }
 
-    // При оплате наличными — сохраняем сразу
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...baseOrder,
-        isPaid: false,
-      }),
-    });
+    setIsLoading(true);
 
-    if (!res.ok) throw new Error("Ошибка при сохранении заказа");
+    const { total, details } = getCartSummary();
 
-    const { order } = await res.json();
-    setOrderId(order.id);
+    const fullAddress =
+      deliveryMethod === "delivery"
+        ? `г. Марганец, ул. ${street}, дом ${data.house}${
+            data.apartment ? `, кв. ${data.apartment}` : ""
+          }`
+        : "Самовывоз";
 
-    // Отправка email
-    await emailjs.send(
-      "service_99tgnff",
-      "template_wf81u0y",
-      {
-        ...baseOrder,
-        orderNumber: order.id,
-        isPaid: "Не оплачен",
-      },
-      "2wQadjCakXxRK4SiR"
-    );
+    const baseOrder = {
+      name: data.name,
+      phone: data.phone,
+      deliveryMethod,
+      paymentMethod,
+      address: fullAddress,
+      cart: details,
+      total: `${total} грн`,
+      isPaid: false, // всегда false при создании заказа
+    };
 
-    toast.success("Заказ отправлен!");
-  } catch (err) {
-    console.error(err);
-    toast.error((err as Error).message || "Ошибка при оформлении заказа");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      // Сохраняем заказ в любом случае и получаем его id
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(baseOrder),
+      });
 
+      if (!res.ok) throw new Error("Ошибка при сохранении заказа");
 
+      const { order } = await res.json();
+      setOrderId(order.id);
+
+      if (paymentMethod === "card") {
+        // При оплате картой переходим к оплате
+        await handleCardPayment(
+          total,
+          order.id,
+          data.name,
+          data.phone,
+          fullAddress,
+          details
+        );
+        return;
+      }
+
+      // При оплате наличными — сразу отправляем письмо
+      await emailjs.send(
+        "service_99tgnff",
+        "template_wf81u0y",
+        {
+          ...baseOrder,
+          orderNumber: order.id,
+          isPaid: "Не оплачен",
+        },
+        "2wQadjCakXxRK4SiR"
+      );
+
+      toast.success("Заказ отправлен!");
+    } catch (err) {
+      console.error(err);
+      toast.error((err as Error).message || "Ошибка при оформлении заказа");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (orderId) {
     return (
@@ -224,7 +219,6 @@ const onSubmit = async (data: FormData) => {
     );
   }
 
-  // === Основная форма ===
   return (
     <div
       onClick={onClose}
