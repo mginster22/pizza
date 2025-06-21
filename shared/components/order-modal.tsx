@@ -70,7 +70,7 @@ export const OrderModal: React.FC<Props> = ({ className, onClose }) => {
     details: string
   ) => {
     const base64Cart = btoa(unescape(encodeURIComponent(details)));
-    const resultUrl = `http://localhost:3000/success?order_id=${orderId}&name=${encodeURIComponent(
+    const resultUrl = `https://pizza-ur5p.vercel.app/success?order_id=${orderId}&name=${encodeURIComponent(
       name
     )}&phone=${encodeURIComponent(
       phone
