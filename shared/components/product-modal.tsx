@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { CartItem } from "@/store/useCartStore";
 import { useCartStore } from "@/store/useCartStore";
@@ -18,6 +19,10 @@ export const ProductModal: React.FC<Props> = ({
 }) => {
   const { addItem, decrementQuantity, incrementQuantity } = useCartStore(
     (state) => state
+  );
+
+  const cartItem = useCartStore((state) =>
+    product ? state.cart.find((item) => item.id === product.id) : undefined
   );
 
   if (!product) return null;
@@ -89,7 +94,7 @@ export const ProductModal: React.FC<Props> = ({
               <button onClick={() => decrementQuantity(product.id)}>
                 <Minus size={20} />
               </button>
-              <span className="text-[20px]">{product.quantity}</span>
+              <span className="text-[20px]">{cartItem?.quantity || 1}</span>
               <button onClick={() => incrementQuantity(product.id)}>
                 <Plus size={20} />
               </button>

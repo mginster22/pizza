@@ -3,3 +3,10 @@
 body{
     background-color: #F2F2F3;
 }
+@layer utilities {
+  @media (max-width: 420px) {
+    .card-150 {
+      width: 150px;
+    }
+  }
+}

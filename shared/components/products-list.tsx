@@ -35,7 +35,7 @@ export const ProductsList: React.FC<Props> = ({ className }) => {
               transition={{ duration: 0.3 }}
               className={cn(
                 "flex flex-col max-w-[290px] w-full bg-[#F9F9F9] p-3 rounded-2xl cursor-pointer ",
-                "max-sm:w-[175px]"
+                "max-sm:w-[175px] ","card-150"
               )}
             >
               <img
