@@ -6,7 +6,7 @@ body{
 @layer utilities {
   @media (max-width: 420px) {
     .card-150 {
-      width: 150px;
+      width: 160px;
     }
   }
 }

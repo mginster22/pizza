@@ -24,7 +24,7 @@ export const ProductsList: React.FC<Props> = ({ className }) => {
 
   return (
     <>
-      <div className={cn("flex flex-wrap gap-2 max-sm:ml-4", className)}>
+      <div className={cn("flex flex-wrap gap-2 max-sm:ml-2 max-sm:gap-3 max-sm:justify-center", className)}>
         <AnimatePresence >
           {filteredDataCategory.map((item) => (
             <motion.div
