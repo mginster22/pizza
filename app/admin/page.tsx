@@ -222,6 +222,15 @@ export default function AdminPage() {
                 {order.isPaid ? "Оплачен" : "Не оплачен"}
               </span>
             </p>
+            <p>
+              <strong>Доставка: </strong>
+              <span>
+               {parseInt(order.total.replace(/[^\d]/g, "")) > 1300
+  ? "Бесплатная доставка"
+  : "Платная доставка"}
+
+              </span>
+            </p>
           </li>
         ))}
       </ul>
